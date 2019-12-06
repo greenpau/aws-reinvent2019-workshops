@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  AWSEUCLabVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/20
+      Tags:
+        - Key: Name
+          Value: AWS EUC VPC
+  PublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      AvailabilityZone: !Join 
+        - ''
+        - - !Ref 'AWS::Region'
+          - a
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: AWS EUC Public Subnet
+  PrivateSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      AvailabilityZone: !Join 
+        - ''
+        - - !Ref 'AWS::Region'
+          - a
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: AWS EUC Private Subnet1
+  PrivateSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      AvailabilityZone: !Join 
+        - ''
+        - - !Ref 'AWS::Region'
+          - b
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: AWS EUC Private Subnet2
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Network
+          Value: Public
+  GatewayToInternet:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      Tags:
+        - Key: Network
+          Value: Public
+        - Key: Name
+          Value: AWS EUC Public Route Table
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: GatewayToInternet
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PublicSubnet1RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+  NatGateway:
+    Type: 'AWS::EC2::NatGateway'
+    DependsOn: NatPublicIP
+    Properties:
+      AllocationId: !GetAtt NatPublicIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+  NatPublicIP:
+    Type: 'AWS::EC2::EIP'
+    DependsOn: AWSEUCLabVPC
+    Properties:
+      Domain: vpc
+  PrivateRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      Tags:
+        - Key: Network
+          Value: Private
+        - Key: Name
+          Value: AWS EUC Private Route Table
+  PrivateRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+  PrivateSubnet1RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+  PrivateSubnet2RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
+  S3VPCEndpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      VpcEndpointType: Gateway
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      RouteTableIds:
+        - !Ref PublicRouteTable
+        - !Ref PrivateRouteTable
+  AS2SecurityGroupExt:
+    Type: 'AWS::EC2::SecurityGroup'
+    Metadata:
+      Comment: 'Generic AppStream2 instances SG'
+    DependsOn: PrivateRoute
+    Properties:
+      VpcId: !Ref AWSEUCLabVPC
+      GroupDescription: Generic AppStream2 instances SG
+      Tags:
+        - Key: Name
+          Value: AS2-sg
+  AS2IMGBLDR1:
+    Type: 'AWS::AppStream::ImageBuilder'
+    Metadata:
+      Comment: The AS2Lab Image Builder1 instance created via CloudFormation
+    DependsOn: AS2SecurityGroupExt
+    Properties:
+      AppstreamAgentVersion: LATEST
+      DisplayName: AS2 Lab Image Builder1
+      ImageName: AppStream-WinServer2019-09-18-2019
+      InstanceType: stream.standard.medium
+      Name: AS2Lab_Image_Builder1
+      VpcConfig:
+        SubnetIds:
+          - !Ref PrivateSubnet1
+        SecurityGroupIds:
+          - !Ref AS2SecurityGroupExt
+      Tags:
+        - Key: Name
+          Value: AS2 Image Builder1

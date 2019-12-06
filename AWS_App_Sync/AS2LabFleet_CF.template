@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  This CloudFormation Stack provisions the AS2Lab Fleet resources within your
+  AS2LabVPC. 
+Parameters:
+  NameOfFleet:
+    Description: Enter the name of the AppStream fleet to be created.
+    Default: AS2Lab_Fleet_v1
+    MinLength: '1'
+    Type: String
+  FleetInstanceType:
+    Description: Select the instance type for the AppStream fleet.
+    Type: String
+    Default: stream.standard.medium
+    AllowedValues:
+      - stream.standard.medium
+      - stream.standard.large
+  FleetImageName:
+    Description: Enter in the name of the image you wish to use for the fleet.
+    Type: String
+    Default: AS2Lab_Image_v1
+    MinLength: '1'
+  FleetSubnet:
+    Description: >-
+      Select the subnet which your AppStream fleet streaming instances will be
+      connected to.
+    Type: 'AWS::EC2::Subnet::Id'
+    MinLength: '1'
+  FleetDesiredInstances:
+    Description: Enter the number of instances to maintain within this AppStream fleet.
+    Type: Number
+    Default: '3'
+    MinValue: '2'
+  FleetMaxSessionDuration:
+    Description: 'Enter the maximum length, in seconds, of the user session.'
+    Type: Number
+    Default: '57600'
+    MinValue: '600'
+  FleetDisconnectTimeoutDuration:
+    Description: >-
+      Enter the time after disconnection, in seconds, when a session is
+      considered to have ended.
+    Type: Number
+    Default: '900'
+    MinValue: '60'
+Resources:
+  AppStreamFleet:
+    Type: 'AWS::AppStream::Fleet'
+    Properties:
+      Name: !Ref NameOfFleet
+      Description: This is the AS2Lab fleet that was created using CloudFormation
+      DisplayName: The AS2Lab fleet created in CloudFormation
+      ImageName: !Ref FleetImageName
+      InstanceType: !Ref FleetInstanceType
+      FleetType: ALWAYS_ON
+      ComputeCapacity:
+        DesiredInstances: !Ref FleetDesiredInstances
+      VpcConfig:
+        SubnetIds:
+          - !Ref FleetSubnet
+      MaxUserDurationInSeconds: !Ref FleetMaxSessionDuration
+      DisconnectTimeoutInSeconds: !Ref FleetDisconnectTimeoutDuration
+      EnableDefaultInternetAccess: false
+    CreationPolicy:
+      StartFleet: true
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 388fc84e-f15f-40ae-879b-40487be190f6
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: AppStream resource names
+        Parameters:
+          - NameOfFleet
+      - Label:
+          default: AppStream fleet configuration - streaming instances
+        Parameters:
+          - FleetImageName
+          - FleetDesiredInstances
+          - FleetInstanceType
+      - Label:
+          default: AppStream fleet configuration - network settings
+        Parameters:
+          - FleetSubnet
+      - Label:
+          default: AppStream fleet configuration - session settings
+        Parameters:
+          - FleetDisconnectTimeoutDuration
+          - FleetMaxSessionDuration
+    ParameterLabels:
+      NameOfFleet:
+        default: 'Name of the fleet:'
+      FleetDesiredInstances:
+        default: 'Number of instances:'
+      FleetInstanceType:
+        default: 'Instance type:'
+      FleetSubnet:
+        default: 'Subnet:'
+      FleetDisconnectTimeoutDuration:
+        default: 'Disconnect timeout:'
+      FleetMaxSessionDuration:
+        default: 'Max session duration:'
+      FleetImageName:
+        default: 'Image name:'
+  'AWS::CloudFormation::Designer':
+    388fc84e-f15f-40ae-879b-40487be190f6:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 90
+      z: 1
+      embeds: []

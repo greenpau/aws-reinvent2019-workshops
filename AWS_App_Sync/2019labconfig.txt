@@ -1,0 +1,123 @@
+#######################################################################################
+File Name: 2019labconfig.txt
+File Version: 4
+Author: Greg LaVigne 
+Initial:11/22/2017 v1	(GPL)	Created for BAP205 AppStream2 workshop-reInvent2017
+ModHist: 
+	01/17/2018 v2	(GPL) 	Replaced Blender references with Notepad++ and updated page numbers and for SKO2018
+	11/21/2018 v3	(GPL) 	Updated for re:Invent 2018: BAP330: Build an Amazon AppStream 2.0 Environment to Deliver Desktop Applications to Any Computer 
+	12/05/2019 v4	(GPL) 	Updated for re:Invent 2019: EUC303: Build an Amazon AppStream 2.0 Environment to stream desktop apps
+
+################################
+URLS to reference:
+PDF of LabGuide:		http://labguide.appstreamlabs.com/AS2_Labguide_2019ReInvent.pdf
+				(http://labguide.appstreamlabs.com/AS2_Labguide_2018ReInvent.pdf)
+
+Lab files to download:		http://labguide.appstreamlabs.com/
+
+AWS Console:			http://console.aws.amazon.com/
+
+REFERENCE PURPOSES ONLY:
+Google Chrome Enterprise: 	https://enterprise.google.com/chrome/chrome-browser/
+Notepad++:	 		https://notepad-plus-plus.org/
+MS Visual Studio Code:		https://code.visualstudio.com/download (64-Bit System Installer)
+#######################################################################################
+
+STEP 3: #9-Page 15
+CF Stack Name:		AS2LabVPC 
+
+STEP 3: #10-Page 15
+Key:	 		ProjectCode
+Value:			2019reInvent
+
+STEP 4: #18-Page 27
+PowerShell Commands to run:
+Set-ExecutionPolicy Bypass -Scope CurrentUser
+	(when prompted) enter “A” to choose "Yes to All"
+cd\
+cd temp
+./as2appinst
+
+STEP 5: #7-Page 31
+AWS CHROME Application Setting fields:
+Name:			AWS_URL
+Display Name:		Amazon Web Services
+Launch Path:		C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+Icon Path:		C:\AS2Files\aws.png
+Launch Paramaters: 	--no-default-browser-check --no-first-run https://aws.amazon.com
+
+STEP 5: #10-Page 33
+Notepad++ Application Setting fields:
+Name:			Notepad++_x64
+Display Name:		Notepad++
+Launch Path: 		C:\Program Files\Notepad++\notepad++.exe
+
+STEP 5: #14-Page 34
+Visual Studio Code Application Setting fields:
+Name:			VS_Code
+Display Name:		Visual Studio Code
+Launch Path: 		C:\Program Files\Microsoft VS Code\Code.exe
+
+STEP 5: #17-Page 35
+Visual Studio Code Application Setting fields:
+Name:			Five_explorer
+Display Name:		Windows File Explorer
+Launch Path: 		C:\windows\explorer.exe
+
+STEP 5: #46-Page 42
+Image Details
+Name:	 		AS2Lab_Image_v1
+Display Name:		AS2Lab Image v1 mm/dd/20yy
+Description: 		Image v1 created by (your initials or name) on mm/dd/20yy. Apps include AWS URL on Chrome Enterprise x64, Notepad++, Visual Studio Code and File Explorer.
+Tags:			KEY:	ProjectCode
+			VALUE:	2019reInvent
+Always user latest?:	(leave it checked)
+
+STEP 6: #11-Page 49
+CF Stack Name:		AS2LabFleetCF 
+Name of Fleet:		AS2Lab_Fleet
+Image Name:		AS2Lab_Image_v1
+Numbe of instances:	3
+Instance type:		stream.standar.medium
+Subnet:			AppStream2 Private Subnet (1 or 2)
+Disconnect Timeout:	900
+Max Session Duration:	57600
+
+STEP 6: #12-Page 51
+Tags:			KEY:	ProjectCode
+			VALUE:	2019reInvent
+
+STEP 7: #3 -Page 54
+Stack Details fields
+Name of Fleet:		AS2Lab_Stack
+Display Name:		AS2Lab Stack
+Description:		Stack created originally by (your initials or name) on mm/dd/20yy. It leverages the AS2Lab_Fleet fleet that was built on top of the AS2Lab_Image_vX image. Apps to stream include AWS URL on Chrome Enterprise x64, Notepad++, Visual Studio Code and File Explorer.
+Redirect URL:		https://reinvent.awsevents.com/
+Feedback URL:		https://console.aws.amazon.com/support/home
+Fleet:			AS2Lab_Fleet
+Tags:			KEY:	ProjectCode
+			VALUE:	2019reInvent
+
+STEP 7 #12-Page 59
+Stack Branding Entries
+Organization logo:			Upload the StackLogo.GIF
+Organization website links-Display Name:Amazon.com
+Organization website links (url):	http://amazon.com
+Color Theme:				(Pick one)
+Page Title:				AS2Lab Application Catalog
+Favicon:				Upload the aws.png
+
+STEP 7 #16-Page 62
+Create Streaming URL
+User ID:		AS2LabTest
+SessionExpiration:	1 Hour
+
+STEP 8: #3-Page 65
+Create User Fields
+Email:			The email address you have access to
+First Name:		AS2Lab
+Last Name:		User1
+
+
+
+
